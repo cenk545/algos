@@ -64,3 +64,26 @@ const arr = [1, 3, 5, 7, 9];
 const target = 7;
 binarySearch(arr, target); // -> 3
 ```
+
+## Calculating mid
+
+When the current search range has an even number of elements there are two middle indices; the common convention is to pick the lower middle (floor). A safe, clear way to compute the midpoint is:
+
+```
+mid = lo + Math.floor((hi - lo) / 2)
+```
+
+In JavaScript a common micro-optimization is `lo + ((hi - lo) >>> 1)`, which uses a bit shift to divide by two. That is fine for typical arrays, but note the `>>>` operator performs a 32-bit conversion and can wrap for extremely large values — `Math.floor` is the clearer, portable choice.
+
+## Practical guidance
+
+Here are the important implementation details to get correct and avoid common pitfalls:
+
+- Loop termination: use `while (lo <= hi)` so single-element ranges are tested.
+- Updating bounds: if `arr[mid] < target` set `lo = mid + 1`; if `arr[mid] > target` set `hi = mid - 1`.
+- Duplicates: this simple binary search returns any matching index. If you need the first or last occurrence, implement a lower/upper bound variant.
+- Insertion points: to find where a missing value should be inserted, return `lo` after the loop ends (the usual lower-bound position).
+
+## When to use binary search
+
+Use binary search whenever you can reduce the problem by making a yes/no decision that splits the search space in two (not just sorted arrays). Examples include numeric root finding, searching in virtual/indexed ranges, and finding boundary conditions in monotonic functions.

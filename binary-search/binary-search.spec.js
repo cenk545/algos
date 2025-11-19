@@ -1,4 +1,9 @@
-const { binarySearch } = require("./binary-search.js");
+const {
+  binarySearch,
+  findBoolBoundary,
+  firstNotSmaller,
+  findFirstOccurrence,
+} = require("./binary-search.js");
 
 describe("binarySearch (iterative)", () => {
   test("finds a middle element", () => {
@@ -99,5 +104,137 @@ describe("binarySearch (iterative)", () => {
         expect(res).toBe(expected);
       }
     });
+  });
+});
+
+describe("findBoolBoundary (first true index)", () => {
+  test("empty array returns -1", () => {
+    expect(findBoolBoundary([])).toBe(-1);
+  });
+
+  test("all false returns -1", () => {
+    expect(findBoolBoundary([false, false, false])).toBe(-1);
+  });
+
+  test("all true returns 0", () => {
+    expect(findBoolBoundary([true, true, true])).toBe(0);
+  });
+
+  test("single-element arrays", () => {
+    expect(findBoolBoundary([true])).toBe(0);
+    expect(findBoolBoundary([false])).toBe(-1);
+  });
+
+  test("first true in the middle", () => {
+    expect(findBoolBoundary([false, false, true, true])).toBe(2);
+    expect(findBoolBoundary([false, true, true, true])).toBe(1);
+  });
+
+  test("first true at last index", () => {
+    expect(findBoolBoundary([false, false, false, true])).toBe(3);
+  });
+
+  test("randomized boundaries", () => {
+    for (let n = 0; n < 100; n++) {
+      const len = Math.floor(Math.random() * 50);
+      const firstTrue = Math.floor(Math.random() * (len + 1));
+      const arr = Array.from({ length: len }, (_, i) => i >= firstTrue);
+      const expected = firstTrue < len ? firstTrue : -1;
+      expect(findBoolBoundary(arr)).toBe(expected);
+    }
+  });
+
+  test("exhaustive small lengths", () => {
+    for (let len = 0; len <= 20; len++) {
+      for (let k = 0; k <= len; k++) {
+        const arr = Array.from({ length: len }, (_, i) => i >= k);
+        const expected = k < len ? k : -1;
+        expect(findBoolBoundary(arr)).toBe(expected);
+      }
+    }
+  });
+});
+
+describe("firstNotSmaller (first element >= target)", () => {
+  test("basic examples", () => {
+    expect(
+      firstNotSmaller([1, 3, 3, 5, 8, 8, 10], 2)
+    ).toBe(1); // first >= 2 is 3 at index 1
+
+    expect(
+      firstNotSmaller([2, 3, 5, 7, 11, 13, 17, 19], 6)
+    ).toBe(3); // first >= 6 is 7 at index 3
+  });
+
+  test("target equals existing element", () => {
+    expect(firstNotSmaller([1, 2, 3, 4], 3)).toBe(2);
+    expect(firstNotSmaller([5, 5, 5, 6], 5)).toBe(0);
+  });
+
+  test("first element is the answer", () => {
+    expect(firstNotSmaller([10, 20, 30], 5)).toBe(0);
+  });
+
+  test("last element is the answer", () => {
+    expect(firstNotSmaller([1, 2, 3, 4, 9], 9)).toBe(4);
+  });
+
+  test("duplicates and repeated values", () => {
+    expect(firstNotSmaller([1, 2, 2, 2, 3], 2)).toBe(1);
+    expect(firstNotSmaller([1, 1, 1, 1], 1)).toBe(0);
+  });
+
+  test("randomized checks against linear scan", () => {
+    for (let t = 0; t < 200; t++) {
+      const len = Math.floor(Math.random() * 100) + 1; // ensure non-empty since guaranteed
+      const arr = Array.from({ length: len }, (_, i) => i * Math.floor(Math.random() * 3 + 1));
+      arr.sort((a, b) => a - b);
+      const target = Math.floor(Math.random() * (arr[arr.length - 1] + 3));
+      const expected = arr.findIndex((x) => x >= target);
+      // Problem statement guarantees existence; if not found, skip this iteration
+      if (expected === -1) continue;
+      expect(firstNotSmaller(arr, target)).toBe(expected);
+    }
+  });
+});
+
+describe("findFirstOccurrence (first index of target)", () => {
+  test("basic examples", () => {
+    expect(
+      findFirstOccurrence([1, 3, 3, 3, 3, 6, 10, 10, 10, 100], 3)
+    ).toBe(1);
+
+    expect(findFirstOccurrence([2, 3, 5, 7, 11, 13, 17, 19], 6)).toBe(-1);
+  });
+
+  test("empty and single-element arrays", () => {
+    expect(findFirstOccurrence([], 5)).toBe(-1);
+    expect(findFirstOccurrence([5], 5)).toBe(0);
+    expect(findFirstOccurrence([5], 1)).toBe(-1);
+  });
+
+  test("first and last positions", () => {
+    expect(findFirstOccurrence([1, 2, 3, 4], 1)).toBe(0);
+    expect(findFirstOccurrence([1, 2, 3, 4], 4)).toBe(3);
+  });
+
+  test("duplicates return first index", () => {
+    expect(findFirstOccurrence([3, 3, 3, 3], 3)).toBe(0);
+    expect(findFirstOccurrence([1, 3, 3, 3, 4], 3)).toBe(1);
+  });
+
+  test("not found returns -1", () => {
+    expect(findFirstOccurrence([1, 2, 4, 5], 3)).toBe(-1);
+  });
+
+  test("randomized checks against indexOf", () => {
+    for (let t = 0; t < 200; t++) {
+      const len = Math.floor(Math.random() * 100);
+      const arr = Array.from({ length: len }, () => Math.floor(Math.random() * 20));
+      arr.sort((a, b) => a - b);
+      const target = Math.floor(Math.random() * 20);
+      const expected = arr.indexOf(target);
+      expect(findFirstOccurrence(arr, target)).toBe(expected);
+    }
   });
 });
